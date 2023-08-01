@@ -9,8 +9,10 @@ When the lookup is finished, the script offers to sort and deduplicate the retri
 
 ## Dependencies
 The package `ncbi-entrez-direct` needs to be installed.
-For further reference, go to [Entrez Programming Utilities Help](https://www.ncbi.nlm.nih.gov/books/NBK179288/).
+For further reference visit [Entrez Programming Utilities Help](https://www.ncbi.nlm.nih.gov/books/NBK179288/).
 
 ## Usage: 
 `./doi2pmid.sh <input>`
- 
+
+## Example:
+`./doi2pmid.sh example_input.txt` 
