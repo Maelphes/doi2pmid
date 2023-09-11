@@ -17,6 +17,26 @@ fi
 # Get the total number of lines in the input file
 total_lines=$(wc -l < "$input")
 
+# Function to validate the esearch output
+validate_esearch_output() {
+  local esearch_output="$1"
+  # Count the number of lines in the output
+  local num_lines=$(echo "$esearch_output" | wc -l)
+  
+  # Check if the output contains only one line
+  if [ "$num_lines" -ne 1 ]; then
+    echo "Query did not return a unique value. Skipping."
+    return 1
+  fi
+  
+  # Check if the line contains an integer
+  local result=$(echo "$esearch_output" | tr -d '\n')
+  if ! [[ "$result" =~ ^[0-9]+$ ]]; then
+    echo "Query did not return an integer. Skipping."
+    return 1
+  fi
+}
+
 # Function to display the progress bar
 progress_bar() {
   local progress=$(( $1 * 100 / $2 ))
@@ -71,22 +91,29 @@ while IFS= read -r line; do
     echo "Processing: '$arg'"
     spinner &
     spinner_pid="$!"
-    clear_line
-    progress_bar "$counter" "$total_lines" 
+#   clear_line
+#   progress_bar "$counter" "$total_lines" 
     esearch_output=$(echo ""| esearch -db pubmed -query "doi: $arg" | efetch -format docsum | xtract -pattern DocumentSummary -element Id)
+
+   # Validate the esearch output
+    if ! validate_esearch_output "$esearch_output"; then
+      # Skip processing this query and move to the next one
+    # count the iterations in order to report how many queries were processed
+      echo "No unique PMID for $arg found." >> $output
+    let counter=counter+1
+    let notfound=notfound+1
+    # Stop the spinning animation for this iteration
+    kill "$spinner_pid"
+      continue
+    fi
+
     # Check if the query resulted in non-empty output
     if [ -n "$esearch_output" ]; then
       # Append the output to the output file $output
       echo "$esearch_output" >> $output
-      echo " "
+#     echo " "
       echo "PMID $esearch_output found."
-    else
-      echo " "
-      echo "No output for the given query."
-      echo "No PMID for $arg found." >> $output
-      let notfound=notfound+1
     fi
-    
     # count the iterations in order to report how many queries were processed
     let counter=counter+1
     # Stop the spinning animation for this iteration
