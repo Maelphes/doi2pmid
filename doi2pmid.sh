@@ -93,8 +93,10 @@ while IFS= read -r line; do
     spinner_pid="$!"
 #   clear_line
 #   progress_bar "$counter" "$total_lines" 
-    esearch_output=$(echo ""| esearch -db pubmed -query "doi: $arg" | efetch -format docsum | xtract -pattern DocumentSummary -element Id)
-
+    searchterm="\"$arg\" [aid]"
+#    echo "$searchterm"
+    esearch_output=$(echo ""| esearch -db pubmed -query "$searchterm" | efetch -format docsum | xtract -pattern DocumentSummary -element Id)
+#    echo "$arg"
    # Validate the esearch output
     if ! validate_esearch_output "$esearch_output"; then
       # Skip processing this query and move to the next one
@@ -142,7 +144,7 @@ if [ "$response2" = "y" ] || [ "$response2" = "Y" ] || [ "$response2" = "" ]; th
   echo "Untouched results in output.txt: $num_entries."
   echo "Unique entries in output_sorted.txt: $num_entries_sort"
 else
-  echo "Data not sorted and deduplicated. Check '$output'."
+  echo "Data remains untouched. Check '$output'."
 fi
 
   else
